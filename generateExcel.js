@@ -13,67 +13,14 @@ const {
   TableLayoutType,
 } = require("docx");
 const {parseHelper} = require("./parsreCreateTable.js");
+const {makeArrayofData} = require("./makeArrayofData.js");
 
 
 // ----------------------- PARSE SQL -----------------------
 function parseSQL(sqlText) {
-    
-
-  let create = "";
-  let par = 0;
-  const lines = sqlText.split("\n");
-  const columns = [];
-
-
-
-
-  parseHelper(sqlText);
-
-  return;
-
-
-  let insideTable = false;
-
-  console.log(sqlText);
-    
-  for (let rawLine of lines) {
-    let line = rawLine.trim();
-    
-    if (line.startsWith("CREATE TABLE")) {
-      insideTable = true;
-
-      for (let i = 0; i < sqlText.length; i++) {
-        const ch = sqlText[i];
-        if (ch === "(") {
-            par++;
-        };
-        
-        if (ch === ")") {
-          par--;
-          if (par === 0) {
-            break;
-          }
-        }
-        if (par > 0 && (par != 1 || par != 0)) create += ch;
-      }
-      continue;
-    }
-    const arr = create.replace(/\n/g , "").split(",");
-    for (let index = 0; index < arr.length; index++) {
-        let tem = arr[index].replace(/\s+/g, ' ').trim().split(" ");
-        columns.push({ variable : tem[0] , datatype : tem[1], description: "" });
-        insideTable = false;
-
-    }
-
-
-    let comment = "";
-    if (rawLine.includes("--")) {
-      comment = rawLine.split("--")[1].trim();
-    }
-  }
-
-  return columns;
+  const parsedData = parseHelper(sqlText);
+  const arrayData = makeArrayofData(parsedData);
+  return arrayData.column;
 }
 
 // ----------------------- CREATE ONE DOC FOR ALL FILES -----------------------
@@ -96,7 +43,7 @@ async function createDocForFolder(folderPath, outputName = "All_Tables.docx") {
     const tableName = fileName.replace(".sql", "").toUpperCase();
 
     // Create DOCX table for each SQL file
- //   const table = createTable(columns);
+      const table = createTable(columns);
 
     // Add section heading + table
     docSections.push(
@@ -113,7 +60,7 @@ async function createDocForFolder(folderPath, outputName = "All_Tables.docx") {
       })
     );
 
-   // docSections.push(table);
+    docSections.push(table);
     docSections.push(new Paragraph("")); // line break
   });
 
@@ -155,9 +102,9 @@ function createTable(columns) {
       new TableRow({
         height: { value: rowHeight },
         children: [
-          makeDataCell(col.variable, colWidth, fill),
-          makeDataCell(col.datatype, colWidth, fill),
-          makeDataCell(col.description, colWidth, fill),
+          makeDataCell(col.variableName, colWidth, fill),
+          makeDataCell(col.variableDatatype, colWidth, fill),
+          makeDataCell(col.variableDescription, colWidth, fill),
         ],
       })
     );
