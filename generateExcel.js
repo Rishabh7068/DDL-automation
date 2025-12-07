@@ -18,8 +18,10 @@ const {makeArrayofData} = require("./makeArrayofData.js");
 
 // ----------------------- PARSE SQL -----------------------
 function parseSQL(sqlText) {
+  console.log("hello");
   const parsedData = parseHelper(sqlText);
   const arrayData = makeArrayofData(parsedData);
+
   return arrayData.column;
 }
 
@@ -146,7 +148,7 @@ function makeDataCell(text, colWidth, fill) {
       new Paragraph({
         children: [
           new TextRun({
-            text: (text || "").toUpperCase(),
+            text: (text || ""),
             font: "Arial",
           }),
         ],

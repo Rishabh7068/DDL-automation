@@ -1,10 +1,16 @@
-let column = [];
-let nonuniqueindex = [];
-let uniqueindex = [];
-let primarykey = [];
-let uniquekey = [];
+  let column = [];
+  let nonuniqueindex = [];
+  let uniqueindex = [];
+  let primarykey = [];
+  let uniquekey = [];
 
 function makeArrayofData(parsedData) {
+  column = [];
+  nonuniqueindex = [];
+  uniqueindex = [];
+  primarykey = [];
+  uniquekey = [];
+
   const { splitafterCreatestatmentdata, splitedData } = parsedData;
 
   for (let index = 0; index < splitedData.length; index++) {
@@ -45,40 +51,45 @@ function makeArrayofData(parsedData) {
       handleAlter(splitafterCreatestatmentdata[index]);
     }
   }
-  return {column , nonuniqueindex , uniqueindex , primarykey , uniquekey};
+  return { column, nonuniqueindex, uniqueindex, primarykey, uniquekey };
 }
 
 function handleCreateConstraint(line) {
-    const {preData, postData  } =  helperFunction(line);
-    let dividedLine = preData.split(" ");
-    let name = dividedLine[1];
-    let keyType = dividedLine[2];
+  const { preData, postData } = helperFunction(line);
+  let dividedLine = preData.split(" ");
+  let name = dividedLine[1];
+  let keyType = dividedLine[2];
 
-    if(keyType === "PRIMARY"){
-        primarykey.push({primarykeyName : name , primarykeyColumn : postData});
-    }else if(keyType === "UNIQUE"){
-        uniquekey.push({primarykeyName : name , primarykeyColumn : postData});
-    }
-
-
+  if (keyType === "PRIMARY") {
+    primarykey.push({ primarykeyName: name, primarykeyColumn: postData });
+  } else if (keyType === "UNIQUE") {
+    uniquekey.push({ primarykeyName: name, primarykeyColumn: postData });
+  }
 }
 
 function handlePrimaryKey(line) {
-    const {preData, postData  } =  helperFunction(line);
-    primarykey.push({primarykeyName : "" , primarykeyColumn : postData});
+  const { preData, postData } = helperFunction(line);
+  primarykey.push({ primarykeyName: "", primarykeyColumn: postData });
 }
 
 function handleUniqueKey(line) {
-    const {preData, postData  } =  helperFunction(line);
-    uniquekey.push({primarykeyName : "" , primarykeyColumn : postData});
+  const { preData, postData } = helperFunction(line);
+  uniquekey.push({ primarykeyName: "", primarykeyColumn: postData });
 }
 
 function handleAlter(line) {
   let splitPreData = line.trim().split(" ");
   let casetohandle = splitPreData[3]; // ADD MODIFY CHANGE DROP RENAME
 
-  if(splitPreData[4] === "PRIMARY" || splitPreData[4] === "UNIQUE" || splitPreData[4] === "CONSTRAINT" || splitPreData[4] ===  "FOREIGN"){
-    // handle key alter 
+  console.log("alter ");
+
+  if (
+    splitPreData[4] === "PRIMARY" ||
+    splitPreData[4] === "UNIQUE" ||
+    splitPreData[4] === "CONSTRAINT" ||
+    splitPreData[4] === "FOREIGN"
+  ) {
+    // handle key alter
     return;
   }
 
@@ -129,27 +140,31 @@ function handleAlter(line) {
   } else if (casetohandle === "MODIFY") {
     let varName = splitPreData[4];
     let varDatatype = splitPreData[5];
-    let index = column.findIndex(c => c.variableName === varName);
+    let index = column.findIndex((c) => c.variableName === varName);
     if (index !== -1) {
-        column[index].variableDatatype = varDatatype;
+      column[index].variableDatatype = varDatatype;
     }
   } else if (casetohandle === "CHANGE") {
     let preVarname = splitPreData[4];
     let newVarname = splitPreData[5];
     let newDatatype = splitPreData[6];
-    let index = column.findIndex(c => c.variableName === preVarname);
+    let index = column.findIndex((c) => c.variableName === preVarname);
     if (index !== -1) {
-        column[index].variableName = newVarname;
-        column[index].variableDatatype = newDatatype;
-        column[index].variableDescription ="Column contains value of " + newVarname.toLowerCase().replace(/_/g, " ");
+      column[index].variableName = newVarname;
+      column[index].variableDatatype = newDatatype;
+      column[index].variableDescription =
+        "Column contains value of " +
+        newVarname.toLowerCase().replace(/_/g, " ");
     }
   } else if (casetohandle === "RENAME" && splitPreData[4] === "COLUMN") {
     let varName = splitPreData[5];
     let newvarName = splitPreData[7];
-    let index = column.findIndex(c => c.variableName === varName);
+    let index = column.findIndex((c) => c.variableName === varName);
     if (index !== -1) {
-        column[index].variableName = newvarName;
-        column[index].variableDescription ="Column contains value of " + newvarName.toLowerCase().replace(/_/g, " ");
+      column[index].variableName = newvarName;
+      column[index].variableDescription =
+        "Column contains value of " +
+        newvarName.toLowerCase().replace(/_/g, " ");
     }
   }
   return;
